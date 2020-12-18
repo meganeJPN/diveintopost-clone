@@ -1,6 +1,6 @@
 class TeamsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_team, only: %i[show edit update destroy]
+  before_action :set_team, only: %i[show edit update destroy change]
 
   def index
     @teams = Team.all
@@ -27,6 +27,20 @@ class TeamsController < ApplicationController
       flash.now[:error] = I18n.t('views.messages.failed_to_save_team')
       render :new
     end
+  end
+
+  def change
+    # binding.irb
+    redirect_to @team, notice: 'オーナーではありません' unless @team.owner == current_user
+    redirect_to @team, notice: 'メンバーではありません' unless @team.assigns.all.exists?(user_id: params[:user_id])
+    if @team.update(owner: User.find(params[:user_id]))
+      # binding.irb
+      redirect_to @team, notice: "オーナーを#{User.find(params[:user_id]).email}に権限移動しました"
+    else
+      flash.now[:error] = I18n.t('views.messages.failed_to_save_team')
+      render :show
+    end
+     
   end
 
   def update
