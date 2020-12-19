@@ -8,7 +8,6 @@ class AssignMailer < ApplicationMailer
   end
 
   def change_owner(email)
-    binding.irb
     @email = email
     mail to: @email, subject: "オーナーの権限があなたに移動されました"
   end

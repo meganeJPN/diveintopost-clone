@@ -34,8 +34,7 @@ class TeamsController < ApplicationController
     redirect_to @team, notice: 'オーナーではありません' unless @team.owner == current_user
     redirect_to @team, notice: 'メンバーではありません' unless @team.assigns.all.exists?(user_id: params[:user_id])
     if @team.update(owner: User.find(params[:user_id]))
-      binding.irb
-      AssignMailer.change_owner(User.find(params[:user_id]).email)
+      AssignMailer.change_owner(User.find(params[:user_id]).email).deliver
       redirect_to @team, notice: "オーナーを#{User.find(params[:user_id]).email}に権限移動しました"
     else
       flash.now[:error] = I18n.t('views.messages.failed_to_save_team')
