@@ -1,6 +1,6 @@
 class AgendasController < ApplicationController
   # before_action :set_agenda, only: %i[show edit update destroy]
-
+  # before_action :set_agenda, only: :destroy
   def index
     @agendas = Agenda.all
   end
@@ -21,10 +21,28 @@ class AgendasController < ApplicationController
     end
   end
 
+  def destroy
+    # binding.irb
+    @agenda = Agenda.find(params[:id])
+    # binding.irb
+    if current_user.id == @agenda.user_id || current_user.id == @agenda.team.owner_id
+      members = @agenda.team.members
+      
+      if @agenda.destroy
+        members.each do |member|
+          AssignMailer.delete_agenda(member.email, @agenda.title).deliver
+        end
+        redirect_to dashboard_url, notice: "アジェンダを削除しました"
+      end
+    else
+      redirect_to dashboard_url, notice: "削除できません"
+    end
+  end
+
   private
 
   def set_agenda
-    @agenda = Agenda.find(params[:id])
+    # @agenda = Agenda.find(params[:id])
   end
 
   def agenda_params
